@@ -219,6 +219,13 @@ export default function App() {
           </button>
           <button
             className="btn btn-ghost"
+            title="Importar / actualizar tarjetas desde un archivo JSON"
+            onClick={() => setView('import')}
+          >
+            📥 Importar
+          </button>
+          <button
+            className="btn btn-ghost"
             title="Exportar mazo como JSON (backup)"
             onClick={() => {
               const json = JSON.stringify(deck, null, 2);
