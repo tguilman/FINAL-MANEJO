@@ -39,9 +39,14 @@ function parseData(data: unknown): Card[] {
     return cards;
   }
 
-  // Format: flat array [{ id?, pregunta, respuesta, unidad, estado?, importancia? }]
-  const arr: { id?: string; pregunta: string; respuesta: string; unidad: string; estado?: string; importancia?: number }[] =
-    Array.isArray(data) ? data : (data as { cards?: unknown[]; preguntas?: unknown[] }).cards as typeof arr ?? (data as { preguntas?: unknown[] }).preguntas as typeof arr ?? [];
+  // Format: flat array — full backup export (includes probabilidad, order, lastPracticed, etc.)
+  type RawCard = {
+    id?: string; pregunta: string; respuesta: string; unidad: string;
+    estado?: string; probabilidad?: string; importancia?: number;
+    order?: number; lastPracticed?: string; practiceSession?: number;
+  };
+  const arr: RawCard[] =
+    Array.isArray(data) ? data : (data as { cards?: unknown[]; preguntas?: unknown[] }).cards as RawCard[] ?? (data as { preguntas?: unknown[] }).preguntas as RawCard[] ?? [];
 
   return arr.map((c, i) => ({
     id: c.id ?? `card-${i}-${ts}`,
@@ -51,8 +56,13 @@ function parseData(data: unknown): Card[] {
     estado: (['verde', 'amarillo', 'rojo', 'sin_clasificar'].includes(c.estado ?? '')
       ? c.estado
       : 'sin_clasificar') as Card['estado'],
+    probabilidad: (['seguro', 'posible', 'improbable'].includes(c.probabilidad ?? '')
+      ? c.probabilidad
+      : undefined) as Card['probabilidad'],
     importancia: c.importancia ?? 1,
-    order: i,
+    order: c.order ?? i,
+    lastPracticed: c.lastPracticed,
+    practiceSession: c.practiceSession,
   }));
 }
 
