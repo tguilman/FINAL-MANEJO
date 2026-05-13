@@ -7,6 +7,7 @@ import PracticeModal from './components/PracticeModal';
 import FlipMode from './components/FlipMode';
 import Exam from './components/Exam';
 import History from './components/History';
+import AudioPlayer from './components/AudioPlayer';
 
 export default function App() {
   const [view, setView] = useState<AppView>('api-setup');
@@ -14,6 +15,7 @@ export default function App() {
   const [deck, setDeck] = useState<Card[]>([]);
   const [filter, setFilter] = useState<CardEstado | 'todas'>('todas');
   const [practiceState, setPracticeState] = useState<PracticeState | null>(null);
+  const [audioQueue, setAudioQueue] = useState<{ cards: Card[]; source: string } | null>(null);
 
   useEffect(() => {
     const key = storage.getApiKey();
@@ -69,6 +71,17 @@ export default function App() {
     setView('board');
   };
 
+  const startAudio = (cards: Card[], source: string) => {
+    if (cards.length === 0) return;
+    setAudioQueue({ cards, source });
+    setView('audio');
+  };
+
+  const exitAudio = () => {
+    setAudioQueue(null);
+    setView('board');
+  };
+
   const counts = {
     todas: deck.length,
     verde: deck.filter((c) => c.estado === 'verde').length,
@@ -79,6 +92,16 @@ export default function App() {
 
   if (view === 'api-setup' || view === 'import' || view === 'select') {
     return <Setup view={view} onApiKey={handleApiKey} onDeckImported={handleDeckImported} />;
+  }
+
+  if (view === 'audio' && audioQueue) {
+    return (
+      <AudioPlayer
+        cards={audioQueue.cards}
+        source={audioQueue.source}
+        onClose={exitAudio}
+      />
+    );
   }
 
   if (view === 'practice' && practiceState) {
@@ -165,6 +188,17 @@ export default function App() {
             🟡 Dudosas
           </button>
           <button
+            className="btn btn-audio"
+            onClick={() => {
+              const seguras = deck.filter((c) => c.probabilidad === 'seguro');
+              const pool = seguras.length > 0 ? seguras : deck;
+              startAudio(pool, seguras.length > 0 ? '🎧 Seguro' : '🎧 Todas');
+            }}
+            title="Escuchar las que entran seguro"
+          >
+            🎧 Escuchar
+          </button>
+          <button
             className="btn btn-ghost"
             onClick={() => startFlip(deck, 'Flip — Todas')}
             title="Modo flip"
@@ -208,6 +242,7 @@ export default function App() {
         onDeckUpdate={handleDeckUpdate}
         onStartPractice={startPractice}
         onStartFlip={startFlip}
+        onStartAudio={startAudio}
       />
     </div>
   );

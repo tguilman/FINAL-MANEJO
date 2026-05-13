@@ -1754,3 +1754,138 @@ select option { background: var(--surface2); }
   margin-left: 0.1rem;
 }
 .col-filter-clear:hover { color: var(--rojo); }
+
+/* ── Audio Player ─────────────────────────────── */
+.btn-audio {
+  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.btn-audio:hover { opacity: 0.85; }
+
+.audio-fullscreen {
+  position: fixed; inset: 0;
+  background: #0a0f1e;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 200;
+}
+.audio-inner {
+  width: 100%; max-width: 600px;
+  padding: 1.5rem;
+  display: flex; flex-direction: column; gap: 1.25rem;
+}
+.audio-header {
+  display: flex; align-items: center; gap: 0.75rem;
+}
+.audio-source {
+  flex: 1; font-size: 0.85rem;
+  color: #a5b4fc; font-weight: 600; letter-spacing: 0.05em;
+}
+.audio-progress {
+  font-size: 0.85rem; color: var(--text-muted);
+}
+.audio-progressbar {
+  height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden;
+}
+.audio-progressbar-fill {
+  height: 100%; background: linear-gradient(90deg, #7c3aed, #4f46e5);
+  transition: width 0.4s ease;
+}
+.audio-phase-label {
+  text-align: center; font-size: 0.9rem; font-weight: 600;
+  padding: 0.4rem 1rem; border-radius: 20px;
+  background: var(--surface2); color: var(--text-muted);
+  width: fit-content; margin: 0 auto;
+  transition: background 0.3s, color 0.3s;
+}
+.audio-phase-label.phase-question { background: rgba(99,102,241,0.15); color: #a5b4fc; }
+.audio-phase-label.phase-pause    { background: rgba(234,179,8,0.15);  color: #fde047; }
+.audio-phase-label.phase-answer   { background: rgba(34,197,94,0.15);  color: #4ade80; }
+.audio-phase-label.phase-between  { background: rgba(99,102,241,0.1);  color: #818cf8; }
+
+.audio-card-area {
+  background: var(--surface2);
+  border-radius: 16px; padding: 1.75rem;
+  min-height: 180px;
+  display: flex; flex-direction: column; gap: 1rem;
+  justify-content: center; align-items: center; text-align: center;
+}
+.audio-question {
+  font-size: 1.15rem; font-weight: 600; line-height: 1.5;
+  color: var(--text-main); margin: 0;
+}
+.audio-countdown-wrap {
+  display: flex; flex-direction: column; align-items: center; gap: 0.25rem;
+}
+.audio-countdown-circle {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: rgba(234,179,8,0.15);
+  border: 3px solid #fde047;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2rem; font-weight: 800; color: #fde047;
+}
+.audio-countdown-hint {
+  font-size: 0.8rem; color: var(--text-muted); margin: 0;
+}
+.audio-answer-box {
+  width: 100%; background: rgba(34,197,94,0.08);
+  border: 1px solid rgba(34,197,94,0.25);
+  border-radius: 10px; padding: 1rem;
+  text-align: left;
+}
+.audio-answer-label {
+  font-size: 0.75rem; font-weight: 700; color: #4ade80;
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+.audio-answer-box p { margin: 0.4rem 0 0; color: var(--text-main); line-height: 1.5; }
+
+.audio-pause-row {
+  display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+}
+.audio-pause-label { font-size: 0.8rem; color: var(--text-muted); margin-right: 0.25rem; }
+.audio-pause-opt {
+  background: var(--surface2); border: 1px solid var(--surface3);
+  color: var(--text-muted); border-radius: 6px; padding: 0.25rem 0.6rem;
+  font-size: 0.8rem; cursor: pointer; transition: all 0.15s;
+}
+.audio-pause-opt:hover { color: var(--text-main); }
+.audio-pause-opt.active {
+  background: rgba(124,58,237,0.2); border-color: #7c3aed; color: #a5b4fc; font-weight: 700;
+}
+
+.audio-controls {
+  display: flex; align-items: center; justify-content: center; gap: 1.5rem;
+}
+.audio-ctrl-btn {
+  background: var(--surface2); border: none; color: var(--text-muted);
+  font-size: 1.4rem; width: 52px; height: 52px; border-radius: 50%;
+  cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center;
+}
+.audio-ctrl-btn:hover:not(:disabled) { background: var(--surface3); color: var(--text-main); }
+.audio-ctrl-btn:disabled { opacity: 0.3; cursor: default; }
+.audio-play-btn {
+  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  border: none; color: #fff;
+  font-size: 1.8rem; width: 72px; height: 72px; border-radius: 50%;
+  cursor: pointer; transition: transform 0.15s, opacity 0.15s;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 20px rgba(124,58,237,0.4);
+}
+.audio-play-btn:hover { transform: scale(1.06); opacity: 0.9; }
+
+.audio-settings { display: flex; flex-direction: column; gap: 0.6rem; }
+.audio-setting-row {
+  display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+}
+.audio-voice-select {
+  flex: 1; min-width: 0;
+  background: var(--surface2); border: 1px solid var(--surface3);
+  color: var(--text-main); border-radius: 6px;
+  padding: 0.25rem 0.5rem; font-size: 0.8rem;
+}

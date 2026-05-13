@@ -11,6 +11,7 @@ interface Props {
   onDeckUpdate: (deck: Card[]) => void;
   onStartPractice: (queue: Card[], source: string) => void;
   onStartFlip: (queue: Card[], source: string) => void;
+  onStartAudio: (queue: Card[], source: string) => void;
 }
 
 interface CardItemProps {
@@ -305,7 +306,7 @@ const COL_FILTER_OPTS: { tag: ColFilterTag; label: string; color: string }[] = [
   { tag: 'sin_clasificar',label: '⚪',  color: '#6b7280' },
 ];
 
-export default function Board({ deck, filter, apiKey, onDeckUpdate, onStartPractice, onStartFlip }: Props) {
+export default function Board({ deck, filter, apiKey, onDeckUpdate, onStartPractice, onStartFlip, onStartAudio }: Props) {
   const [cardDragFrom, setCardDragFrom] = useState<string | null>(null);
   const [cardDragOver, setCardDragOver] = useState<string | null>(null);
   const [colDragFrom, setColDragFrom] = useState<string | null>(null);
@@ -403,7 +404,13 @@ export default function Board({ deck, filter, apiKey, onDeckUpdate, onStartPract
             className="btn btn-primary btn-sm"
             onClick={() => onStartPractice(sortCol(allFilteredCards), 'Filtradas')}
           >
-            ✍️ Practicar todas las filtradas ({allFilteredCards.length})
+            ✍️ Practicar todas ({allFilteredCards.length})
+          </button>
+          <button
+            className="btn btn-audio btn-sm"
+            onClick={() => onStartAudio(sortCol(allFilteredCards), 'Filtradas')}
+          >
+            🎧 Escuchar ({allFilteredCards.length})
           </button>
           <button className="btn btn-ghost btn-sm" onClick={clearAllFilters}>
             ✕ Limpiar filtros
@@ -484,12 +491,20 @@ export default function Board({ deck, filter, apiKey, onDeckUpdate, onStartPract
                 </div>
                 <div className="kanban-col-actions">
                   {activeFilters.size > 0 && col.length > 0 && (
-                    <button className="btn btn-primary btn-sm" onClick={() => onStartPractice(col, `Filtradas — ${unidad}`)}>
-                      ✍️ Practicar estas ({col.length})
-                    </button>
+                    <>
+                      <button className="btn btn-primary btn-sm" onClick={() => onStartPractice(col, `Filtradas — ${unidad}`)}>
+                        ✍️ Practicar estas ({col.length})
+                      </button>
+                      <button className="btn btn-audio btn-sm" onClick={() => onStartAudio(col, `Filtradas — ${unidad}`)}>
+                        🎧 Escuchar ({col.length})
+                      </button>
+                    </>
                   )}
                   <button className="btn btn-ghost btn-sm" onClick={() => onStartPractice(allInUnit, unidad)}>
                     🎯 Practicar
+                  </button>
+                  <button className="btn btn-ghost btn-sm" onClick={() => onStartAudio(allInUnit, unidad)}>
+                    🎧 Escuchar
                   </button>
                   <button className="btn btn-ghost btn-sm" onClick={() => onStartFlip(allInUnit, unidad)}>
                     🔄 Flip
