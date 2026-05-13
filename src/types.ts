@@ -21,6 +21,7 @@ export interface SimulacroQuestion {
   respuestaEstudiante: string;
   correccion: string;
   puntajeIA: number;
+  aprobada?: boolean;
 }
 
 export interface Simulacro {

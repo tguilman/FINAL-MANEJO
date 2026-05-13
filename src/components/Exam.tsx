@@ -22,7 +22,7 @@ export default function Exam({ deck, apiKey, onDeckUpdate, onClose, onSaved }: P
   const [current, setCurrent] = useState(0);
   const [timeLeft, setTimeLeft] = useState(DURACION);
   const [phase, setPhase] = useState<Phase>('writing');
-  const [corrections, setCorrections] = useState<{ texto: string; puntaje: number }[]>([]);
+  const [corrections, setCorrections] = useState<{ texto: string; puntaje: number; aprobada: boolean }[]>([]);
   const [progress, setProgress] = useState(0);
   const [corrError, setCorrError] = useState('');
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -68,12 +68,12 @@ export default function Exam({ deck, apiKey, onDeckUpdate, onClose, onSaved }: P
       });
       onDeckUpdate(updatedDeck);
 
-      // Save simulacro
-      const total = results.reduce((sum, r) => sum + r.puntaje, 0);
+      // Save simulacro — puntajeTotal = count of aprobadas
+      const aprobadas = results.filter((r) => r.aprobada).length;
       const simulacro: Simulacro = {
         id: `sim-${Date.now()}`,
         fecha: new Date().toISOString(),
-        puntajeTotal: Math.round((total / (results.length * 10)) * 15 * 10) / 10,
+        puntajeTotal: aprobadas,
         duracionSegundos: DURACION - timeLeft,
         preguntas: cards.map((c, i) => ({
           cardId: c.id,
@@ -82,6 +82,7 @@ export default function Exam({ deck, apiKey, onDeckUpdate, onClose, onSaved }: P
           respuestaEstudiante: answers[c.id] ?? '',
           correccion: results[i]?.texto ?? '',
           puntajeIA: results[i]?.puntaje ?? 0,
+          aprobada: results[i]?.aprobada ?? false,
         })) as SimulacroQuestion[],
       };
       storage.addSimulacro(simulacro);
@@ -98,9 +99,7 @@ export default function Exam({ deck, apiKey, onDeckUpdate, onClose, onSaved }: P
   };
 
   const answered = cards.filter((c) => (answers[c.id] ?? '').trim().length > 0).length;
-  const totalScore = corrections.length > 0
-    ? Math.round((corrections.reduce((s, r) => s + r.puntaje, 0) / (corrections.length * 10)) * 15 * 10) / 10
-    : 0;
+  const aprobadas = corrections.filter((r) => r.aprobada).length;
 
   if (phase === 'correcting') {
     return (
@@ -124,13 +123,15 @@ export default function Exam({ deck, apiKey, onDeckUpdate, onClose, onSaved }: P
   }
 
   if (phase === 'results') {
+    const pct = cards.length > 0 ? aprobadas / cards.length : 0;
+    const totalColor = pct >= 0.7 ? '#22c55e' : pct >= 0.5 ? '#eab308' : '#ef4444';
     return (
       <div className="exam-container">
         <div className="exam-results-header">
           <h2>Resultados del simulacro</h2>
           <div className="exam-total-score">
-            <span className="exam-score-num">{totalScore}</span>
-            <span className="exam-score-denom"> / 15</span>
+            <span className="exam-score-num" style={{ color: totalColor }}>{aprobadas}</span>
+            <span className="exam-score-denom"> / {cards.length} aprobadas</span>
           </div>
           <div className="exam-results-actions">
             <button className="btn btn-ghost" onClick={onSaved}>📊 Ver historial</button>
@@ -141,13 +142,17 @@ export default function Exam({ deck, apiKey, onDeckUpdate, onClose, onSaved }: P
           {cards.map((card, i) => {
             const corr = corrections[i];
             const score = corr?.puntaje ?? 0;
-            const color = score >= 7 ? '#22c55e' : score >= 5 ? '#eab308' : '#ef4444';
+            const scoreColor = score >= 7 ? '#22c55e' : score >= 5 ? '#eab308' : '#ef4444';
+            const isAprobada = corr?.aprobada ?? false;
             return (
               <div key={card.id} className="exam-result-item">
                 <div className="exam-result-header">
                   <span className="exam-result-num">#{i + 1}</span>
                   <span className="exam-result-unidad">{card.unidad}</span>
-                  <span className="exam-result-score" style={{ color }}>{score} / 10</span>
+                  <span className={`exam-verdict-badge ${isAprobada ? 'exam-verdict--aprobada' : 'exam-verdict--desaprobada'}`}>
+                    {isAprobada ? '✅ Aprobada' : '❌ Desaprobada'}
+                  </span>
+                  <span className="exam-result-score" style={{ color: scoreColor }}>{score} / 10</span>
                 </div>
                 <p className="exam-result-pregunta">{card.pregunta}</p>
                 <div className="exam-result-section">

@@ -23,6 +23,7 @@ export default function PracticeModal({ state, deck, apiKey, onDeckUpdate, onClo
   const [respuesta, setRespuesta] = useState('');
   const [correccion, setCorreccion] = useState('');
   const [puntaje, setPuntaje] = useState<number | null>(null);
+  const [aprobada, setAprobada] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showAnswer, setShowAnswer] = useState(false);
@@ -37,6 +38,7 @@ export default function PracticeModal({ state, deck, apiKey, onDeckUpdate, onClo
     setRespuesta('');
     setCorreccion('');
     setPuntaje(null);
+    setAprobada(null);
     setError('');
     setShowAnswer(false);
   }, [index]);
@@ -49,6 +51,7 @@ export default function PracticeModal({ state, deck, apiKey, onDeckUpdate, onClo
       const result = await corregirRespuesta(apiKey, card.pregunta, card.respuesta, respuesta);
       setCorreccion(result.texto);
       setPuntaje(result.puntaje);
+      setAprobada(result.aprobada);
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -128,11 +131,18 @@ export default function PracticeModal({ state, deck, apiKey, onDeckUpdate, onClo
 
       {correccion && (
         <div className="correction-box">
-          {puntaje !== null && (
-            <div className="correction-score" style={{ color: puntajeColor }}>
-              {puntaje} / 10
-            </div>
-          )}
+          <div className="correction-score-row">
+            {aprobada !== null && (
+              <span className={`exam-verdict-badge ${aprobada ? 'exam-verdict--aprobada' : 'exam-verdict--desaprobada'}`}>
+                {aprobada ? '✅ Aprobada' : '❌ Desaprobada'}
+              </span>
+            )}
+            {puntaje !== null && (
+              <span className="correction-score" style={{ color: puntajeColor }}>
+                {puntaje} / 10
+              </span>
+            )}
+          </div>
           <div className="correction-text">{correccion}</div>
         </div>
       )}

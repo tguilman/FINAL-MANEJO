@@ -122,7 +122,22 @@ export function selectExamCards(deck: Card[]): Card[] {
   const yellow = shuffle(pool.filter((c) => c.estado === 'amarillo'));
   const unclass= shuffle(pool.filter((c) => c.estado === 'sin_clasificar'));
   const green  = shuffle(pool.filter((c) => c.estado === 'verde'));
-  return [...red, ...yellow, ...unclass, ...green].slice(0, 15);
+
+  // Reserve ~3 spots for verde; fill remaining 12 with rojo/amarillo/sin_clasificar
+  const priority = [...red, ...yellow, ...unclass];
+  const mainCards = priority.slice(0, 12);
+  const greenCards = green.slice(0, 3);
+  const combined = [...mainCards, ...greenCards];
+
+  // If still under 15, fill from leftover priority then leftover green
+  if (combined.length < 15) {
+    combined.push(...priority.slice(12, 12 + (15 - combined.length)));
+  }
+  if (combined.length < 15) {
+    combined.push(...green.slice(3, 3 + (15 - combined.length)));
+  }
+
+  return combined.slice(0, 15);
 }
 
 export function countLines(text: string): number {

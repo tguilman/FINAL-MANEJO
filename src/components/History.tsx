@@ -23,9 +23,10 @@ export default function History({ onClose }: Props) {
     return `${m}m ${sec}s`;
   };
 
-  const scoreColor = (score: number) => {
-    if (score >= 10) return '#22c55e';
-    if (score >= 7) return '#eab308';
+  const scoreColor = (aprobadas: number, total: number) => {
+    const pct = total > 0 ? aprobadas / total : 0;
+    if (pct >= 0.7) return '#22c55e';
+    if (pct >= 0.5) return '#eab308';
     return '#ef4444';
   };
 
@@ -46,26 +47,41 @@ export default function History({ onClose }: Props) {
           <div className="history-evolution">
             <h3>Evolución de puntajes</h3>
             <div className="history-chart">
-              {[...simulacros].reverse().map((s, i) => (
+              {[...simulacros].reverse().map((s, i) => {
+                const total = s.preguntas.length;
+                // Support both old (puntajeTotal as /15 score) and new (count of aprobadas)
+                const aprobadas = s.preguntas.some((p) => p.aprobada !== undefined)
+                  ? s.preguntas.filter((p) => p.aprobada).length
+                  : s.puntajeTotal;
+                const pct = total > 0 ? aprobadas / total : s.puntajeTotal / 15;
+                return (
                 <div key={s.id} className="history-chart-bar-wrap">
                   <div
                     className="history-chart-bar"
                     style={{
-                      height: `${(s.puntajeTotal / 15) * 100}%`,
-                      backgroundColor: scoreColor(s.puntajeTotal),
+                      height: `${pct * 100}%`,
+                      backgroundColor: scoreColor(aprobadas, total),
                     }}
-                    title={`${s.puntajeTotal}/15`}
+                    title={`${aprobadas}/${total} aprobadas`}
                   />
                   <span className="history-chart-label">{i + 1}</span>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
           <div className="history-list">
             {simulacros.map((s) => {
               const isOpen = expanded === s.id;
-              const failed = s.preguntas.filter((p) => p.puntajeIA < 5);
+              const hasAprobada = s.preguntas.some((p) => p.aprobada !== undefined);
+              const aprobadas = hasAprobada
+                ? s.preguntas.filter((p) => p.aprobada).length
+                : s.puntajeTotal;
+              const total = s.preguntas.length;
+              const failed = hasAprobada
+                ? s.preguntas.filter((p) => !p.aprobada)
+                : s.preguntas.filter((p) => p.puntajeIA < 5);
               return (
                 <div key={s.id} className="history-item">
                   <button
@@ -79,13 +95,13 @@ export default function History({ onClose }: Props) {
                     <div className="history-item-score-wrap">
                       <span
                         className="history-item-score"
-                        style={{ color: scoreColor(s.puntajeTotal) }}
+                        style={{ color: scoreColor(aprobadas, total) }}
                       >
-                        {s.puntajeTotal} / 15
+                        {aprobadas} / {total} aprobadas
                       </span>
                       {failed.length > 0 && (
                         <span className="history-item-failed">
-                          🔴 {failed.length} fallidas
+                          ❌ {failed.length} desaprobadas
                         </span>
                       )}
                     </div>
@@ -95,12 +111,16 @@ export default function History({ onClose }: Props) {
                   {isOpen && (
                     <div className="history-detail">
                       {s.preguntas.map((p, i) => {
-                        const color = p.puntajeIA >= 7 ? '#22c55e' : p.puntajeIA >= 5 ? '#eab308' : '#ef4444';
+                        const scoreColor2 = p.puntajeIA >= 7 ? '#22c55e' : p.puntajeIA >= 5 ? '#eab308' : '#ef4444';
+                        const isAprobada = p.aprobada ?? (p.puntajeIA >= 6);
                         return (
                           <div key={i} className="history-detail-item">
                             <div className="history-detail-header">
                               <span className="history-detail-num">#{i + 1}</span>
-                              <span className="history-detail-score" style={{ color }}>
+                              <span className={`exam-verdict-badge ${isAprobada ? 'exam-verdict--aprobada' : 'exam-verdict--desaprobada'}`}>
+                                {isAprobada ? '✅ Aprobada' : '❌ Desaprobada'}
+                              </span>
+                              <span className="history-detail-score" style={{ color: scoreColor2 }}>
                                 {p.puntajeIA} / 10
                               </span>
                             </div>
