@@ -113,28 +113,83 @@ export function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-export function selectExamCards(deck: Card[]): Card[] {
-  // Prefer "seguro" cards; fall back to full deck if fewer than 5 marked
-  const seguras = deck.filter((c) => c.probabilidad === 'seguro');
-  const pool = seguras.length >= 5 ? seguras : deck;
+// Returns the numeric part of a unit name, e.g. "Unidad 6.1" → 6.1
+function unitNum(unidad: string): number {
+  const m = unidad.match(/(\d+(?:\.\d+)?)/);
+  return m ? parseFloat(m[1]) : 0;
+}
 
-  const red    = shuffle(pool.filter((c) => c.estado === 'rojo'));
-  const yellow = shuffle(pool.filter((c) => c.estado === 'amarillo'));
-  const unclass= shuffle(pool.filter((c) => c.estado === 'sin_clasificar'));
-  const green  = shuffle(pool.filter((c) => c.estado === 'verde'));
+// "Middle" units are 5 through 10 (including 6.1, 6.2, etc.)
+function isMiddleUnit(unidad: string): boolean {
+  const n = unitNum(unidad);
+  return n >= 5 && n <= 10;
+}
 
-  // Reserve ~3 spots for verde; fill remaining 12 with rojo/amarillo/sin_clasificar
-  const priority = [...red, ...yellow, ...unclass];
-  const mainCards = priority.slice(0, 12);
-  const greenCards = green.slice(0, 3);
-  const combined = [...mainCards, ...greenCards];
+// Pick up to `count` cards from `pool` with unit diversity.
+// Pass 1: one card per unit (best estado within each unit).
+// Pass 2: if still short, fill with extras — middle units first.
+function pickDiverse(pool: Card[], count: number): Card[] {
+  if (pool.length === 0) return [];
+  if (pool.length <= count) return shuffle(pool);
 
-  // If still under 15, fill from leftover priority then leftover green
-  if (combined.length < 15) {
-    combined.push(...priority.slice(12, 12 + (15 - combined.length)));
+  const estadoPrio: Record<string, number> = {
+    rojo: 0, amarillo: 1, sin_clasificar: 2, verde: 3,
+  };
+
+  // Shuffle first so ties between same-estado cards are random, then stable-sort by estado
+  const sorted = shuffle([...pool]).sort(
+    (a, b) => (estadoPrio[a.estado] ?? 4) - (estadoPrio[b.estado] ?? 4)
+  );
+
+  const selected: Card[] = [];
+  const selectedIds = new Set<string>();
+  const usedUnits = new Set<string>();
+
+  // Pass 1: best card from each unit
+  for (const c of sorted) {
+    if (selected.length >= count) break;
+    if (!usedUnits.has(c.unidad)) {
+      usedUnits.add(c.unidad);
+      selected.push(c);
+      selectedIds.add(c.id);
+    }
   }
+
+  // Pass 2: still need more — prefer middle units, then estado priority
+  if (selected.length < count) {
+    const remaining = sorted.filter((c) => !selectedIds.has(c.id));
+    remaining.sort((a, b) => {
+      const mDiff = (isMiddleUnit(b.unidad) ? 0 : 1) - (isMiddleUnit(a.unidad) ? 0 : 1);
+      if (mDiff !== 0) return mDiff;
+      return (estadoPrio[a.estado] ?? 4) - (estadoPrio[b.estado] ?? 4);
+    });
+    for (const c of remaining) {
+      if (selected.length >= count) break;
+      selected.push(c);
+    }
+  }
+
+  return selected;
+}
+
+export function selectExamCards(deck: Card[]): Card[] {
+  // Pools by probability (verde handled separately)
+  const seguras = deck.filter((c) => c.probabilidad === 'seguro' && c.estado !== 'verde');
+  const posibles = deck.filter((c) => c.probabilidad === 'posible' && c.estado !== 'verde');
+  const verdes   = deck.filter((c) => c.estado === 'verde');
+
+  // 12 seguro + 1 posible + 2 verde = 15
+  const main        = pickDiverse(seguras, 12);
+  const posiblePick = pickDiverse(posibles, 1);
+  const verdePick   = pickDiverse(verdes, 2);
+
+  const combined = [...main, ...posiblePick, ...verdePick];
+
+  // If any group was short, fill to 15 from the rest of the deck
   if (combined.length < 15) {
-    combined.push(...green.slice(3, 3 + (15 - combined.length)));
+    const usedIds = new Set(combined.map((c) => c.id));
+    const fallback = shuffle(deck.filter((c) => !usedIds.has(c.id)));
+    combined.push(...fallback.slice(0, 15 - combined.length));
   }
 
   return combined.slice(0, 15);
