@@ -8,6 +8,7 @@ import FlipMode from './components/FlipMode';
 import Exam from './components/Exam';
 import History from './components/History';
 import AudioPlayer from './components/AudioPlayer';
+import OralMode from './components/OralMode';
 
 export default function App() {
   const [view, setView] = useState<AppView>('api-setup');
@@ -82,6 +83,18 @@ export default function App() {
     setView('board');
   };
 
+  const startOral = (queue: Card[], source: string) => {
+    if (queue.length === 0) return;
+    storage.incrementSession();
+    setPracticeState({ queue, index: 0, source });
+    setView('oral');
+  };
+
+  const exitOral = () => {
+    setPracticeState(null);
+    setView('board');
+  };
+
   const counts = {
     todas: deck.length,
     verde: deck.filter((c) => c.estado === 'verde').length,
@@ -143,6 +156,18 @@ export default function App() {
     return <History onClose={() => setView('board')} />;
   }
 
+  if (view === 'oral' && practiceState) {
+    return (
+      <OralMode
+        state={practiceState}
+        deck={deck}
+        apiKey={apiKey}
+        onDeckUpdate={handleDeckUpdate}
+        onClose={exitOral}
+      />
+    );
+  }
+
   return (
     <div className="app">
       <header className="topbar">
@@ -199,6 +224,17 @@ export default function App() {
             🎧 Escuchar
           </button>
           <button
+            className="btn btn-oral"
+            onClick={() => {
+              const seguras = deck.filter((c) => c.probabilidad === 'seguro');
+              const pool = seguras.length > 0 ? seguras : deck;
+              startOral(pool, seguras.length > 0 ? '🎤 Seguro' : '🎤 Todas');
+            }}
+            title="Practicar oral con las que entran seguro"
+          >
+            🎤 Oral
+          </button>
+          <button
             className="btn btn-ghost"
             onClick={() => startFlip(deck, 'Flip — Todas')}
             title="Modo flip"
@@ -250,6 +286,7 @@ export default function App() {
         onStartPractice={startPractice}
         onStartFlip={startFlip}
         onStartAudio={startAudio}
+        onStartOral={startOral}
       />
     </div>
   );

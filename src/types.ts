@@ -41,7 +41,8 @@ export type AppView =
   | 'flip'
   | 'exam'
   | 'history'
-  | 'audio';
+  | 'audio'
+  | 'oral';
 
 export interface PracticeState {
   queue: Card[];

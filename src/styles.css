@@ -1793,6 +1793,125 @@ select option { background: var(--surface2); }
 }
 .btn-audio:hover { opacity: 0.85; }
 
+.btn-oral {
+  background: linear-gradient(135deg, #059669, #0d9488);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.btn-oral:hover { opacity: 0.85; }
+
+/* ── Oral Mode ────────────────────────────────────── */
+.oral-fullscreen {
+  position: fixed; inset: 0;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  padding: 1rem;
+  z-index: 200;
+  overflow-y: auto;
+}
+.oral-inner {
+  width: 100%; max-width: 700px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  padding: 1.5rem;
+  display: flex; flex-direction: column; gap: 1rem;
+  max-height: 95vh; overflow-y: auto;
+}
+.oral-header {
+  display: flex; align-items: center; gap: 0.75rem;
+}
+.oral-source { font-weight: 700; flex: 1; font-size: 0.95rem; }
+.oral-progress { color: var(--text-muted); font-size: 0.875rem; }
+.oral-progressbar {
+  height: 4px; background: var(--border); border-radius: 2px; overflow: hidden;
+}
+.oral-progressbar-fill {
+  height: 100%; background: #059669; transition: width 0.3s;
+}
+.oral-phase-label {
+  font-size: 0.875rem; font-weight: 600;
+  padding: 0.4rem 0.75rem; border-radius: var(--radius-sm);
+  background: var(--surface2); color: var(--text-muted); text-align: center;
+}
+.oral-phase-reading    { color: #60a5fa; background: rgba(96,165,250,0.1); }
+.oral-phase-thinking   { color: #a78bfa; background: rgba(167,139,250,0.1); }
+.oral-phase-recording  { color: #ef4444; background: rgba(239,68,68,0.1); }
+.oral-phase-processing { color: #f59e0b; background: rgba(245,158,11,0.1); }
+
+.oral-question {
+  font-size: 1.1rem; font-weight: 600; line-height: 1.6;
+  color: var(--text); text-align: center; padding: 0.5rem 0;
+}
+.oral-countdown-wrap {
+  display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+}
+.oral-countdown-circle {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: var(--surface2); border: 3px solid #a78bfa;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2rem; font-weight: 800; color: #a78bfa;
+}
+.oral-countdown-hint { font-size: 0.8rem; color: var(--text-muted); }
+
+.oral-recording-area {
+  display: flex; flex-direction: column; align-items: center; gap: 0.75rem;
+}
+.oral-mic-pulse {
+  width: 56px; height: 56px; border-radius: 50%; background: #ef4444;
+  animation: mic-pulse 1.2s ease-in-out infinite;
+}
+@keyframes mic-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(239,68,68,0.4); }
+  50%       { transform: scale(1.15); opacity: 0.85; box-shadow: 0 0 0 12px rgba(239,68,68,0); }
+}
+.oral-live-transcript {
+  min-height: 64px; width: 100%;
+  background: var(--surface2); border-radius: var(--radius-sm);
+  padding: 0.75rem; font-size: 0.9rem; line-height: 1.6; color: var(--text);
+}
+.oral-interim { color: var(--text-muted); }
+.oral-silence-hint { font-size: 0.75rem; color: var(--text-muted); }
+
+.oral-processing {
+  display: flex; flex-direction: column; align-items: center; gap: 0.75rem;
+  color: var(--text-muted); padding: 1rem 0;
+}
+.oral-verdict {
+  font-size: 1.8rem; font-weight: 800; text-align: center;
+  padding: 0.75rem 1rem; border-radius: var(--radius);
+}
+.oral-verdict--aprobada   { background: rgba(34,197,94,0.15);  color: #16a34a; }
+.oral-verdict--desaprobada{ background: rgba(239,68,68,0.15);  color: #dc2626; }
+
+.oral-transcript-box {
+  background: var(--surface2); border-radius: var(--radius-sm);
+  padding: 0.75rem; font-size: 0.85rem;
+}
+.oral-transcript-box p { margin-top: 0.25rem; color: var(--text); line-height: 1.5; }
+
+.oral-result { display: flex; flex-direction: column; gap: 0.75rem; }
+
+.oral-idle {
+  display: flex; flex-direction: column; align-items: center; gap: 1.25rem;
+  padding: 0.5rem 0;
+}
+.oral-settings { width: 100%; display: flex; flex-direction: column; gap: 0.5rem; }
+.oral-start-btn {
+  font-size: 1.2rem; font-weight: 700;
+  padding: 0.9rem 2.5rem; border-radius: 50px;
+  background: linear-gradient(135deg, #059669, #0d9488);
+  color: white; border: none; cursor: pointer; transition: opacity 0.2s;
+}
+.oral-start-btn:hover { opacity: 0.9; }
+.oral-reset-btn { margin-top: 0.25rem; }
+
 .audio-fullscreen {
   position: fixed; inset: 0;
   background: #0a0f1e;

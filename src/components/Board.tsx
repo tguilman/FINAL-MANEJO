@@ -12,6 +12,7 @@ interface Props {
   onStartPractice: (queue: Card[], source: string) => void;
   onStartFlip: (queue: Card[], source: string) => void;
   onStartAudio: (queue: Card[], source: string) => void;
+  onStartOral: (queue: Card[], source: string) => void;
 }
 
 interface CardItemProps {
@@ -23,6 +24,7 @@ interface CardItemProps {
   onDragStart: (id: string) => void;
   onDragOver: (e: React.DragEvent, id: string) => void;
   onDrop: (unidad: string) => void;
+  onStartOral: (card: Card) => void;
 }
 
 const PROB_CONFIG: Record<CardProbabilidad, { label: string; className: string }> = {
@@ -31,7 +33,7 @@ const PROB_CONFIG: Record<CardProbabilidad, { label: string; className: string }
   improbable:{ label: '💤 No creo',      className: 'prob-improbable' },
 };
 
-function CardItem({ card, apiKey, deck, onDeckUpdate, onDelete, onDragStart, onDragOver, onDrop }: CardItemProps) {
+function CardItem({ card, apiKey, deck, onDeckUpdate, onDelete, onDragStart, onDragOver, onDrop, onStartOral }: CardItemProps) {
   const [showAnswer, setShowAnswer] = useState(false);
   const [showPractice, setShowPractice] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -108,6 +110,9 @@ function CardItem({ card, apiKey, deck, onDeckUpdate, onDelete, onDragStart, onD
             </button>
             <button className="btn btn-ghost btn-sm" onClick={() => setShowPractice(true)}>
               ✍️ Practicar
+            </button>
+            <button className="btn btn-ghost btn-sm" onClick={() => onStartOral(card)}>
+              🎤 Oral
             </button>
             <button
               className={`btn btn-sm prob-toggle-btn${prob ? ` ${PROB_CONFIG[prob].className}` : ''}`}
@@ -306,7 +311,7 @@ const COL_FILTER_OPTS: { tag: ColFilterTag; label: string; color: string }[] = [
   { tag: 'sin_clasificar',label: '⚪',  color: '#6b7280' },
 ];
 
-export default function Board({ deck, filter, apiKey, onDeckUpdate, onStartPractice, onStartFlip, onStartAudio }: Props) {
+export default function Board({ deck, filter, apiKey, onDeckUpdate, onStartPractice, onStartFlip, onStartAudio, onStartOral }: Props) {
   const [cardDragFrom, setCardDragFrom] = useState<string | null>(null);
   const [cardDragOver, setCardDragOver] = useState<string | null>(null);
   const [colDragFrom, setColDragFrom] = useState<string | null>(null);
@@ -412,6 +417,12 @@ export default function Board({ deck, filter, apiKey, onDeckUpdate, onStartPract
           >
             🎧 Escuchar ({allFilteredCards.length})
           </button>
+          <button
+            className="btn btn-oral btn-sm"
+            onClick={() => onStartOral(sortCol(allFilteredCards), 'Filtradas')}
+          >
+            🎤 Oral ({allFilteredCards.length})
+          </button>
           <button className="btn btn-ghost btn-sm" onClick={clearAllFilters}>
             ✕ Limpiar filtros
           </button>
@@ -498,6 +509,9 @@ export default function Board({ deck, filter, apiKey, onDeckUpdate, onStartPract
                       <button className="btn btn-audio btn-sm" onClick={() => onStartAudio(col, `Filtradas — ${unidad}`)}>
                         🎧 Escuchar ({col.length})
                       </button>
+                      <button className="btn btn-oral btn-sm" onClick={() => onStartOral(col, `Oral — ${unidad}`)}>
+                        🎤 Oral ({col.length})
+                      </button>
                     </>
                   )}
                   <button className="btn btn-ghost btn-sm" onClick={() => onStartPractice(allInUnit, unidad)}>
@@ -505,6 +519,9 @@ export default function Board({ deck, filter, apiKey, onDeckUpdate, onStartPract
                   </button>
                   <button className="btn btn-ghost btn-sm" onClick={() => onStartAudio(allInUnit, unidad)}>
                     🎧 Escuchar
+                  </button>
+                  <button className="btn btn-ghost btn-sm" onClick={() => onStartOral(allInUnit, `Oral — ${unidad}`)}>
+                    🎤 Oral
                   </button>
                   <button className="btn btn-ghost btn-sm" onClick={() => onStartFlip(allInUnit, unidad)}>
                     🔄 Flip
@@ -531,6 +548,7 @@ export default function Board({ deck, filter, apiKey, onDeckUpdate, onStartPract
                       onDragStart={handleCardDragStart}
                       onDragOver={handleCardDragOver}
                       onDrop={handleCardDrop}
+                      onStartOral={(c) => onStartOral([c], `Oral — ${c.unidad}`)}
                     />
                   </div>
                 ))}
